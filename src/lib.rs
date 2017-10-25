@@ -28,7 +28,7 @@ impl Peer {
         })
     }
     pub fn send(&self, destinations: &[u64], buf: &[&[u8]], handles: &[Handle], fds: &[libc::c_int]) -> io::Result<()> {
-        let handles = handle_slice_bits(handles);
+        let handles = handles_as_bits(handles);
         self.desc.send(destinations, &buf, handles, fds)
     }
     pub fn transfer_handle(&self, src_handle: Handle, dst: &Peer) -> io::Result<u64> {
@@ -38,7 +38,7 @@ impl Peer {
         self.desc.handle_release(handle.0)
     }
     pub fn destroy_nodes(&self, handles: &[Handle]) -> io::Result<()> {
-        let handles = handle_slice_bits(handles);
+        let handles = handles_as_bits(handles);
         self.desc.nodes_destroy(handles)
     }
 }
@@ -47,9 +47,15 @@ impl Peer {
 #[repr(C)]
 pub struct Handle(pub u64);
 
-fn handle_slice_bits(handles: &[Handle]) -> &[u64] {
+fn handles_as_bits(handles: &[Handle]) -> &[u64] {
     unsafe {
         slice::from_raw_parts(handles.as_ptr() as *const u64, handles.len())
+    }
+}
+
+fn handles_from_bits(handles: &[u64]) -> &[Handle] {
+    unsafe {
+        slice::from_raw_parts(handles.as_ptr() as *const Handle, handles.len())
     }
 }
 
@@ -73,8 +79,8 @@ impl<'a> MessageData<'a> {
     pub fn payload(&self) -> &[u8] {
         unsafe { self.msg.payload(&self.peer.pool) }
     }
-    pub fn handles(&self) -> &[u64] {
-        unsafe { self.msg.handles(&self.peer.pool) }
+    pub fn handles(&self) -> &[Handle] {
+        handles_from_bits(unsafe { self.msg.handles(&self.peer.pool) })
     }
     pub fn fds(&self) -> &[libc::c_int] {
         unsafe { self.msg.fds(&self.peer.pool) }
