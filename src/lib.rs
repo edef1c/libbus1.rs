@@ -84,6 +84,7 @@ impl<'a> fmt::Debug for MessageData<'a> {
     fn fmt(&self, wr: &mut fmt::Formatter) -> fmt::Result {
         wr.debug_struct("MessageData")
             .field("destination", &self.destination())
+            .field("continue", &self.has_continue())
             .field("payload", &self.payload())
             .field("handles", &self.handles())
             .field("fds", &self.fds())
@@ -94,6 +95,9 @@ impl<'a> fmt::Debug for MessageData<'a> {
 impl<'a> MessageData<'a> {
     pub fn destination(&self) -> Handle {
         Handle(self.msg.destination)
+    }
+    pub fn has_continue(&self) -> bool {
+        (self.msg.flags & sys::MSG_FLAG_CONTINUE) != 0
     }
     pub fn payload(&self) -> &[u8] {
         unsafe { self.msg.payload(&self.peer.pool) }
