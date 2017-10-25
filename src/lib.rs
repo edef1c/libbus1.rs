@@ -69,6 +69,9 @@ pub struct MessageData<'a> {
 }
 
 impl<'a> MessageData<'a> {
+    pub fn destination(&self) -> Handle {
+        Handle(self.msg.destination)
+    }
     pub fn payload(&self) -> &[u8] {
         unsafe { self.msg.payload(&self.peer.pool) }
     }
