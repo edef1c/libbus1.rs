@@ -41,7 +41,6 @@ impl Peer {
     }
 }
 
-
 #[derive(Debug)]
 pub enum Message<'a> {
     Data(MessageData<'a>),
