@@ -2,7 +2,7 @@
 
 extern crate libc;
 
-use std::io;
+use std::{io, slice};
 
 pub mod sys;
 
@@ -22,33 +22,44 @@ impl Peer {
         let msg = self.desc.recv(self.pool.len())?;
         Ok(match msg.ty {
             sys::MSG_DATA => Message::Data(MessageData { peer: self, msg }),
-            sys::MSG_NODE_DESTROY => Message::NodeDestroy(msg.destination),
-            sys::MSG_NODE_RELEASE => Message::NodeRelease(msg.destination),
+            sys::MSG_NODE_DESTROY => Message::NodeDestroy(Handle(msg.destination)),
+            sys::MSG_NODE_RELEASE => Message::NodeRelease(Handle(msg.destination)),
             _ => unreachable!()
         })
     }
-    pub fn send(&self, destinations: &[u64], buf: &[u8], handles: &[u64], fds: &[libc::c_int]) -> io::Result<()> {
+    pub fn send(&self, destinations: &[u64], buf: &[u8], handles: &[Handle], fds: &[libc::c_int]) -> io::Result<()> {
         unsafe {
             let iov = libc::iovec {
                 iov_base: buf.as_ptr() as *mut libc::c_void,
                 iov_len: buf.len() as libc::size_t
             };
+            let handles = handle_slice_bits(handles);
             self.desc.send(destinations, &[iov], handles, fds)
         }
     }
-    pub fn transfer_handle(&self, src_handle: u64, dst: &Peer) -> io::Result<u64> {
-        self.desc.handle_transfer(src_handle, &dst.desc)
+    pub fn transfer_handle(&self, src_handle: Handle, dst: &Peer) -> io::Result<u64> {
+        self.desc.handle_transfer(src_handle.0, &dst.desc)
     }
-    pub fn release_handle(&self, handle: u64) -> io::Result<()> {
-        self.desc.handle_release(handle)
+    pub fn release_handle(&self, handle: Handle) -> io::Result<()> {
+        self.desc.handle_release(handle.0)
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+#[repr(C)]
+pub struct Handle(pub u64);
+
+fn handle_slice_bits(handles: &[Handle]) -> &[u64] {
+    unsafe {
+        slice::from_raw_parts(handles.as_ptr() as *const u64, handles.len())
     }
 }
 
 #[derive(Debug)]
 pub enum Message<'a> {
     Data(MessageData<'a>),
-    NodeDestroy(u64),
-    NodeRelease(u64)
+    NodeDestroy(Handle),
+    NodeRelease(Handle)
 }
 
 #[derive(Debug)]
