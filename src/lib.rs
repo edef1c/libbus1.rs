@@ -2,7 +2,7 @@
 
 extern crate libc;
 
-use std::{io, slice};
+use std::{fmt, io, slice};
 
 pub mod sys;
 
@@ -66,10 +66,20 @@ pub enum Message<'a> {
     NodeRelease(Handle)
 }
 
-#[derive(Debug)]
 pub struct MessageData<'a> {
     peer: &'a Peer,
     msg: sys::msg
+}
+
+impl<'a> fmt::Debug for MessageData<'a> {
+    fn fmt(&self, wr: &mut fmt::Formatter) -> fmt::Result {
+        wr.debug_struct("MessageData")
+            .field("destination", &self.destination())
+            .field("payload", &self.payload())
+            .field("handles", &self.handles())
+            .field("fds", &self.fds())
+            .finish()
+    }
 }
 
 impl<'a> MessageData<'a> {
