@@ -39,6 +39,9 @@ impl Peer {
     pub fn transfer_handle(&self, src_handle: u64, dst: &Peer) -> io::Result<u64> {
         self.desc.handle_transfer(src_handle, &dst.desc)
     }
+    pub fn release_handle(&self, handle: u64) -> io::Result<()> {
+        self.desc.handle_release(handle)
+    }
 }
 
 #[derive(Debug)]
