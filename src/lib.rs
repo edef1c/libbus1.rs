@@ -37,6 +37,10 @@ impl Peer {
     pub fn release_handle(&self, handle: Handle) -> io::Result<()> {
         self.desc.handle_release(handle.0)
     }
+    pub fn destroy_nodes(&self, handles: &[Handle]) -> io::Result<()> {
+        let handles = handle_slice_bits(handles);
+        self.desc.nodes_destroy(handles)
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
