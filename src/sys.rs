@@ -75,6 +75,9 @@ pub const MSG_DATA:         u64 = 1;
 pub const MSG_NODE_DESTROY: u64 = 2;
 pub const MSG_NODE_RELEASE: u64 = 3;
 
+pub const HANDLE_FLAG_MANAGED: u64 = 1 << 0;
+pub const HANDLE_FLAG_REMOTE:  u64 = 1 << 1;
+
 #[derive(Debug)]
 pub struct PeerDesc {
     lower: libc::c_int
