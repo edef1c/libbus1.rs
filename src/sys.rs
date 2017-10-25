@@ -124,7 +124,7 @@ impl PeerDesc {
     }
     pub fn peer_disconnect(&self) -> io::Result<()> {
         unsafe {
-            match libc::ioctl(self.lower, CMD_PEER_DISCONNECT) {
+            match libc::ioctl(self.lower, CMD_PEER_DISCONNECT, &mut 0) {
                 -1 => Err(io::Error::last_os_error()),
                 _  => Ok(())
             }
