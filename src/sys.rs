@@ -1,5 +1,6 @@
 use libc;
 use std::{io, mem, ptr, slice};
+use std::os::unix::io::{FromRawFd, AsRawFd, IntoRawFd};
 
 #[repr(C)]
 #[derive(Debug)]
@@ -89,15 +90,34 @@ pub enum SendFlag {
     Continue
 }
 
+impl FromRawFd for PeerDesc {
+    unsafe fn from_raw_fd(lower: libc::c_int) -> PeerDesc {
+        PeerDesc { lower }
+    }
+}
+
+impl AsRawFd for PeerDesc {
+    fn as_raw_fd(&self) -> libc::c_int {
+        self.lower
+    }
+}
+
+impl IntoRawFd for PeerDesc {
+    fn into_raw_fd(self) -> libc::c_int {
+        let lower = self.lower;
+        mem::forget(self);
+        lower
+    }
+}
+
 impl PeerDesc {
     pub fn new() -> io::Result<PeerDesc> {
-        let lower = unsafe {
+        unsafe {
             match libc::open("/dev/bus1\0".as_ptr() as *const libc::c_char, libc::O_RDWR) {
-                -1  => return Err(io::Error::last_os_error()),
-                res => res
+                -1 => Err(io::Error::last_os_error()),
+                fd => Ok(PeerDesc::from_raw_fd(fd))
             }
-        };
-        Ok(PeerDesc { lower })
+        }
     }
     pub fn map(&self, length: usize) -> io::Result<Pool> {
         Pool::new(self.lower, length)
@@ -204,9 +224,6 @@ impl PeerDesc {
                 _  => Ok(arg.msg)
             }
         }
-    }
-    pub fn as_fd(&self) -> libc::c_int {
-        self.lower
     }
 }
 
