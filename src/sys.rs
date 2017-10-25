@@ -193,7 +193,8 @@ impl PeerDesc {
     }
     pub fn send(&self, destinations: &[u64], payload: &[&[u8]], handles: &[u64], fds: &[libc::c_int]) -> io::Result<()> {
         unsafe {
-            assert_eq!(mem::size_of::<&[u8]>(), mem::size_of::<libc::iovec>());
+            // assert that they're the same size, at compile time
+            mem::transmute::<&[u8], libc::iovec>(&[]);
             let arg = cmd_send {
                 flags: 0,
                 ptr_destinations: destinations.as_ptr() as usize as u64,
