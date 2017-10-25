@@ -86,12 +86,6 @@ pub struct PeerDesc {
     lower: libc::c_int
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum SendFlag {
-    Seed,
-    Continue
-}
-
 impl FromRawFd for PeerDesc {
     unsafe fn from_raw_fd(lower: libc::c_int) -> PeerDesc {
         PeerDesc { lower }
