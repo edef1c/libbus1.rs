@@ -171,22 +171,25 @@ impl PeerDesc {
             }
         }
     }
-    pub unsafe fn send(&self, destinations: &[u64], payload: &[libc::iovec], handles: &[u64], fds: &[libc::c_int]) -> io::Result<()> {
-        let arg = cmd_send {
-            flags: 0,
-            ptr_destinations: destinations.as_ptr() as usize as u64,
-            ptr_errors: 0,
-            n_destinations: destinations.len() as u64,
-            ptr_vecs: payload.as_ptr() as usize as u64,
-            n_vecs: payload.len() as u64,
-            ptr_handles: handles.as_ptr() as usize as u64,
-            n_handles: handles.len() as u64,
-            ptr_fds: fds.as_ptr() as usize as u64,
-            n_fds: fds.len() as u64
-        };
-        match libc::ioctl(self.lower, CMD_SEND, &arg) {
-            -1 => Err(io::Error::last_os_error()),
-            _  => Ok(())
+    pub fn send(&self, destinations: &[u64], payload: &[&[u8]], handles: &[u64], fds: &[libc::c_int]) -> io::Result<()> {
+        unsafe {
+            assert_eq!(mem::size_of::<&[u8]>(), mem::size_of::<libc::iovec>());
+            let arg = cmd_send {
+                flags: 0,
+                ptr_destinations: destinations.as_ptr() as usize as u64,
+                ptr_errors: 0,
+                n_destinations: destinations.len() as u64,
+                ptr_vecs: payload.as_ptr() as usize as u64,
+                n_vecs: payload.len() as u64,
+                ptr_handles: handles.as_ptr() as usize as u64,
+                n_handles: handles.len() as u64,
+                ptr_fds: fds.as_ptr() as usize as u64,
+                n_fds: fds.len() as u64
+            };
+            match libc::ioctl(self.lower, CMD_SEND, &arg) {
+                -1 => Err(io::Error::last_os_error()),
+                _  => Ok(())
+            }
         }
     }
     pub fn recv(&self, max_offset: usize) -> io::Result<msg> {

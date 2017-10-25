@@ -28,14 +28,8 @@ impl Peer {
         })
     }
     pub fn send(&self, destinations: &[u64], buf: &[u8], handles: &[Handle], fds: &[libc::c_int]) -> io::Result<()> {
-        unsafe {
-            let iov = libc::iovec {
-                iov_base: buf.as_ptr() as *mut libc::c_void,
-                iov_len: buf.len() as libc::size_t
-            };
-            let handles = handle_slice_bits(handles);
-            self.desc.send(destinations, &[iov], handles, fds)
-        }
+        let handles = handle_slice_bits(handles);
+        self.desc.send(destinations, &[buf], handles, fds)
     }
     pub fn transfer_handle(&self, src_handle: Handle, dst: &Peer) -> io::Result<u64> {
         self.desc.handle_transfer(src_handle.0, &dst.desc)
