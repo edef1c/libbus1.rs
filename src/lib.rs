@@ -47,6 +47,15 @@ impl Peer {
 #[repr(C)]
 pub struct Handle(pub u64);
 
+impl Handle {
+    pub fn is_remote(&self) -> bool {
+        (self.0 & sys::HANDLE_FLAG_REMOTE) != 0
+    }
+    pub fn is_managed(&self) -> bool {
+        (self.0 & sys::HANDLE_FLAG_MANAGED) != 0
+    }
+}
+
 fn handles_as_bits(handles: &[Handle]) -> &[u64] {
     unsafe {
         slice::from_raw_parts(handles.as_ptr() as *const u64, handles.len())
