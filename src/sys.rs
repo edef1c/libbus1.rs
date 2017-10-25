@@ -218,7 +218,7 @@ impl Drop for PeerDesc {
 
 #[derive(Debug)]
 pub struct Pool {
-    ptr: *mut u8,
+    ptr: *const u8,
     len: usize
 }
 
@@ -228,10 +228,9 @@ impl Pool {
         if ptr == libc::MAP_FAILED {
             Err(io::Error::last_os_error())
         } else {
-            Ok(Pool { ptr: ptr as *mut u8, len })
+            Ok(Pool { ptr: ptr as *const u8, len })
         }
     }
-    pub fn as_ptr(&self) -> *const u8 { self.ptr }
     pub fn len(&self) -> usize { self.len }
 }
 
