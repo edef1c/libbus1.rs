@@ -14,7 +14,9 @@ pub struct Peer {
 
 impl Peer {
     pub fn new() -> io::Result<Peer> {
-        let desc = sys::PeerDesc::new()?;
+        sys::PeerDesc::new().and_then(|desc| unsafe { Peer::from_desc(desc) })
+    }
+    pub unsafe fn from_desc(desc: sys::PeerDesc) -> io::Result<Peer> {
         let pool = desc.map(1 << 30)?;
         Ok(Peer { desc, pool })
     }
