@@ -20,6 +20,12 @@ impl Peer {
         let pool = desc.map(1 << 30)?;
         Ok(Peer { desc, pool })
     }
+    pub unsafe fn as_desc(&self) -> &sys::PeerDesc {
+        &self.desc
+    }
+    pub fn into_desc(self) -> sys::PeerDesc {
+        self.desc
+    }
     pub fn recv<'a>(&'a self) -> io::Result<Message<'a>> {
         let msg = self.desc.recv(self.pool.len())?;
         Ok(match msg.ty {
