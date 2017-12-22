@@ -35,7 +35,8 @@ impl Peer {
             _ => unreachable!()
         })
     }
-    pub fn send(&self, destinations: &[u64], buf: &[&[u8]], handles: &[Handle], fds: &[libc::c_int]) -> io::Result<()> {
+    pub fn send(&self, destinations: &[Handle], buf: &[&[u8]], handles: &[Handle], fds: &[libc::c_int]) -> io::Result<()> {
+        let destinations = handles_as_bits(destinations);
         let handles = handles_as_bits(handles);
         self.desc.send(destinations, &buf, handles, fds)
     }
