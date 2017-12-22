@@ -38,7 +38,7 @@ impl Peer {
     pub fn send(&self, destinations: &[Handle], buf: &[&[u8]], handles: &[Handle], fds: &[libc::c_int]) -> io::Result<()> {
         let destinations = handles_as_bits(destinations);
         let handles = handles_as_bits(handles);
-        self.desc.send(destinations, &buf, handles, fds)
+        self.desc.send(destinations, buf, handles, fds)
     }
     pub fn transfer_handle(&self, src_handle: Handle, dst: &Peer) -> io::Result<u64> {
         self.desc.handle_transfer(src_handle.0, &dst.desc)
