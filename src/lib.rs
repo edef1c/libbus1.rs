@@ -26,7 +26,7 @@ impl Peer {
     pub fn into_desc(self) -> sys::PeerDesc {
         self.desc
     }
-    pub fn recv<'a>(&'a self) -> io::Result<Message<'a>> {
+    pub fn recv(&self) -> io::Result<Message<'_>> {
         let msg = self.desc.recv(self.pool.len())?;
         Ok(match msg.ty {
             sys::MSG_DATA => Message::Data(MessageData { peer: self, msg }),
