@@ -128,8 +128,7 @@ impl PeerDesc {
     }
     pub fn peer_query(&self) -> io::Result<cmd_peer_reset> {
         unsafe {
-            let mut arg: cmd_peer_reset = mem::uninitialized();
-            arg.flags = 0;
+            let mut arg = cmd_peer_reset { flags: 0, .. mem::zeroed() };
             match libc::ioctl(self.lower, CMD_PEER_QUERY, &mut arg) {
                 -1 => Err(io::Error::last_os_error()),
                 _  => Ok(arg)
